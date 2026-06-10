@@ -1,6 +1,11 @@
 # Dados da Receita Federal (arquivos grandes, baixados localmente)
 dados/
 
+# Listas geradas pelo extrair_cnpjs.py
+cnpjs_por_atividade/
+cnpjs*.txt
+eletrodomesticos.txt
+
 # Python
 __pycache__/
 *.pyc
