@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Busca CNPJ + Perfil Google</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>🔎 Busca CNPJ + Perfil da Empresa no Google</h1>
+    <p>Envie sua lista de CNPJs e descubra nome, segmento e se a empresa tem Perfil no Google</p>
+  </header>
+
+  <main>
+    <!-- Configuração -->
+    <section class="card">
+      <h2>1. Chave da API do Google</h2>
+      <div class="row">
+        <input type="password" id="apiKey" placeholder="Cole aqui sua chave da Google Places API (New)">
+        <button id="btnSalvarKey" class="btn-sec">Salvar</button>
+      </div>
+      <p class="hint">
+        A chave fica salva apenas no seu navegador. Sem chave, o sistema consulta só os dados da Receita Federal.
+        <a href="https://console.cloud.google.com/apis/library/places-backend.googleapis.com" target="_blank">Como obter uma chave →</a>
+      </p>
+    </section>
+
+    <!-- Entrada de CNPJs -->
+    <section class="card">
+      <h2>2. Lista de CNPJs</h2>
+      <div class="row">
+        <label for="arquivo" class="btn-file">📂 Carregar arquivo (Excel/CSV/TXT)</label>
+        <input type="file" id="arquivo" accept=".xlsx,.xlsm,.csv,.txt" hidden>
+        <span id="nomeArquivo" class="hint"></span>
+      </div>
+      <textarea id="listaCnpjs" rows="6" placeholder="Ou cole os CNPJs aqui, um por linha (com ou sem pontuação)&#10;Ex.:&#10;06.990.590/0001-23&#10;33000167000101"></textarea>
+      <div class="row">
+        <button id="btnBuscar" class="btn-pri">🚀 Iniciar Busca</button>
+        <button id="btnParar" class="btn-sec" disabled>⏹ Parar</button>
+        <span id="contagem" class="hint"></span>
+      </div>
+    </section>
+
+    <!-- Busca por nome fantasia -->
+    <section class="card">
+      <h2>Ou: busque pelo nome fantasia 🔍</h2>
+      <div class="row">
+        <input type="text" id="nomeBusca" placeholder="Nome fantasia da empresa" style="flex:2;min-width:220px;width:auto">
+        <input type="text" id="cidadeBusca" placeholder="Cidade/UF (opcional)" style="flex:1;min-width:140px;width:auto">
+        <button id="btnBuscarNome" class="btn-pri">Buscar no Google</button>
+      </div>
+      <p class="hint">
+        Busca via Google Places (exige a chave de API). Mostra perfil, endereço e telefone —
+        a Receita Federal não permite busca pública por nome, então o CNPJ não é retornado.
+      </p>
+    </section>
+
+    <!-- Resultados da busca por nome -->
+    <section class="card" id="cardResultadosNome" hidden>
+      <h2>Resultados da busca por nome <span id="resumoNome" class="hint"></span></h2>
+      <div class="table-wrap">
+        <table id="tabelaNome">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nome no Google</th>
+              <th>Semelhança</th>
+              <th>Endereço</th>
+              <th>Telefone</th>
+              <th>⭐</th>
+              <th>Site</th>
+              <th>Maps</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Progresso -->
+    <section class="card" id="cardProgresso" hidden>
+      <div class="progress"><div id="barra"></div></div>
+      <p id="statusTexto" class="hint"></p>
+    </section>
+
+    <!-- Resultados -->
+    <section class="card" id="cardResultados" hidden>
+      <div class="row space">
+        <h2>3. Resultados <span id="resumo" class="hint"></span></h2>
+        <button id="btnExportar" class="btn-sec">⬇ Exportar CSV (Excel)</button>
+      </div>
+      <div class="table-wrap">
+        <table id="tabela">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>CNPJ</th>
+              <th>Empresa (Razão Social)</th>
+              <th>Nome Fantasia</th>
+              <th>Segmento</th>
+              <th>Cidade/UF</th>
+              <th>Situação</th>
+              <th>Perfil Google</th>
+              <th>Nome no Google</th>
+              <th>⭐</th>
+              <th>Maps</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

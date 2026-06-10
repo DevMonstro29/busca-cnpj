@@ -1,0 +1,91 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+header {
+  text-align: center;
+  padding: 32px 16px 20px;
+  background: linear-gradient(135deg, #1e3a8a, #0f172a);
+}
+header h1 { font-size: 1.5rem; margin-bottom: 6px; }
+header p { color: #94a3b8; font-size: 0.95rem; }
+
+main { max-width: 1280px; margin: 0 auto; padding: 20px 16px 60px; }
+
+.card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 18px;
+}
+.card h2 { font-size: 1.05rem; margin-bottom: 12px; color: #f1f5f9; }
+
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.row.space { justify-content: space-between; }
+
+input[type="password"], input[type="text"], textarea {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #e2e8f0;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  width: 100%;
+}
+input[type="password"] { flex: 1; min-width: 240px; width: auto; }
+textarea { resize: vertical; font-family: Consolas, monospace; margin-bottom: 10px; }
+
+button, .btn-file {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity .15s;
+}
+button:hover, .btn-file:hover { opacity: .85; }
+button:disabled { opacity: .4; cursor: not-allowed; }
+
+.btn-pri { background: #2563eb; color: #fff; }
+.btn-sec { background: #334155; color: #e2e8f0; }
+.btn-file { background: #334155; color: #e2e8f0; display: inline-block; }
+
+.hint { color: #94a3b8; font-size: 0.8rem; }
+.hint a { color: #60a5fa; }
+
+.progress {
+  background: #0f172a;
+  border-radius: 8px;
+  height: 14px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+#barra {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #2563eb, #22d3ee);
+  transition: width .3s;
+}
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #334155; white-space: nowrap; }
+td.wrap { white-space: normal; max-width: 260px; }
+th { background: #0f172a; color: #94a3b8; position: sticky; top: 0; }
+tr:hover td { background: #273449; }
+
+.badge { padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+.badge.sim { background: #14532d; color: #4ade80; }
+.badge.nao { background: #7f1d1d; color: #fca5a5; }
+.badge.possivel { background: #713f12; color: #fbbf24; }
+.badge.erro { background: #334155; color: #94a3b8; }
+
+td a { color: #60a5fa; text-decoration: none; }
+td a:hover { text-decoration: underline; }

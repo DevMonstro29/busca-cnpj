@@ -1,0 +1,12 @@
+# Dados da Receita Federal (arquivos grandes, baixados localmente)
+dados/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Bancos locais
+*.db
+*.sqlite
