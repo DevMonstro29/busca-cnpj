@@ -88,7 +88,11 @@
     <section class="card" id="cardResultados" hidden>
       <div class="row space">
         <h2>3. Resultados <span id="resumo" class="hint"></span></h2>
-        <button id="btnExportar" class="btn-sec">⬇ Exportar CSV (Excel)</button>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="soSemSite"> Só perfis SEM site</label>
+          <button id="btnExportarSemSite" class="btn-pri">⬇ Exportar só SEM site</button>
+          <button id="btnExportar" class="btn-sec">⬇ Exportar tudo (CSV)</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table id="tabela">
@@ -98,17 +102,25 @@
               <th>CNPJ</th>
               <th>Empresa (Razão Social)</th>
               <th>Nome Fantasia</th>
-              <th>Segmento</th>
               <th>Cidade/UF</th>
               <th>Situação</th>
               <th>Perfil Google</th>
               <th>Nome no Google</th>
+              <th>Categoria Google</th>
+              <th>Site</th>
               <th>⭐</th>
               <th>Maps</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
+      </div>
+      <div class="paginacao" id="paginacao" hidden>
+        <button id="pgPrimeira" class="btn-sec" title="Primeira página">«</button>
+        <button id="pgAnterior" class="btn-sec">‹ Anterior</button>
+        <span id="pgInfo" class="hint"></span>
+        <button id="pgProxima" class="btn-sec">Próxima ›</button>
+        <button id="pgUltima" class="btn-sec" title="Última página">»</button>
       </div>
     </section>
   </main>

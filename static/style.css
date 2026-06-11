@@ -74,12 +74,45 @@ button:disabled { opacity: .4; cursor: not-allowed; }
   transition: width .3s;
 }
 
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #334155; white-space: nowrap; }
-td.wrap { white-space: normal; max-width: 260px; }
-th { background: #0f172a; color: #94a3b8; position: sticky; top: 0; }
+.table-wrap { overflow-x: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; table-layout: fixed; }
+th, td {
+  padding: 8px 8px;
+  text-align: left;
+  border-bottom: 1px solid #334155;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+td.wrap { white-space: normal; }
+th { background: #0f172a; color: #94a3b8; }
 tr:hover td { background: #273449; }
+
+/* larguras das colunas (proporcionais) — evitam barra horizontal */
+#tabela th:nth-child(1),  #tabela td:nth-child(1)  { width: 3%; }   /* # */
+#tabela th:nth-child(2),  #tabela td:nth-child(2)  { width: 11%; }  /* CNPJ */
+#tabela th:nth-child(3),  #tabela td:nth-child(3)  { width: 14%; }  /* Razão Social */
+#tabela th:nth-child(4),  #tabela td:nth-child(4)  { width: 11%; }  /* Nome Fantasia */
+#tabela th:nth-child(5),  #tabela td:nth-child(5)  { width: 9%; }   /* Cidade/UF */
+#tabela th:nth-child(6),  #tabela td:nth-child(6)  { width: 6%; }   /* Situação */
+#tabela th:nth-child(7),  #tabela td:nth-child(7)  { width: 7%; }   /* Perfil Google */
+#tabela th:nth-child(8),  #tabela td:nth-child(8)  { width: 12%; }  /* Nome no Google */
+#tabela th:nth-child(9),  #tabela td:nth-child(9)  { width: 11%; }  /* Categoria Google */
+#tabela th:nth-child(10), #tabela td:nth-child(10) { width: 7%; }   /* Site */
+#tabela th:nth-child(11), #tabela td:nth-child(11) { width: 5%; }   /* ⭐ */
+#tabela th:nth-child(12), #tabela td:nth-child(12) { width: 5%; }   /* Maps */
+
+/* paginação */
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.paginacao .btn-sec { padding: 6px 12px; font-size: 0.82rem; }
+.paginacao #pgInfo { min-width: 220px; text-align: center; }
 
 .badge { padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
 .badge.sim { background: #14532d; color: #4ade80; }
@@ -89,3 +122,7 @@ tr:hover td { background: #273449; }
 
 td a { color: #60a5fa; text-decoration: none; }
 td a:hover { text-decoration: underline; }
+
+.check { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; }
+.check input { accent-color: #f59e0b; }
+tr.destaque-sem-site { background: rgba(127, 29, 29, 0.25); }

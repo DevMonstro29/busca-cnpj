@@ -3,6 +3,7 @@ dados/
 
 # Listas geradas pelo extrair_cnpjs.py
 cnpjs_por_atividade/
+cnpjs_categorias/
 cnpjs*.txt
 eletrodomesticos.txt
 

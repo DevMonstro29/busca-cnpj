@@ -21,6 +21,65 @@ PLACES_URL = "https://places.googleapis.com/v1/places:searchText"
 
 CNPJ_REGEX = re.compile(r"\d{2}\.?\d{3}\.?\d{3}\s*/?\s*\d{4}-?\d{2}")
 
+# ---------------------------------------------------------------------------
+# Categorias de negócio permitidas (filtro do Perfil Google)
+# ---------------------------------------------------------------------------
+# A Places API não expõe os códigos GCID (3512/55/3477). O filtro casa o texto
+# da categoria que o Google exibe (primaryTypeDisplayName) e os "types" técnicos.
+# Cada grupo lista palavras-chave (já sem acento e minúsculas) que identificam
+# a categoria desejada.
+CATEGORIAS_PERMITIDAS = {
+    # 3512 - Saúde e beleza > Mobilidade e acessibilidade > Scooters elétricos
+    # + Scooters/bicicletas (mobilidade leve)
+    "Scooters / bike / mobilidade": [
+        "scooter",
+        "patinete",
+        "bicicleta",
+        "bike",
+        "triciclo",
+        "mobilidade",
+        "acessibilidade",
+        "cadeira de rodas",
+        "equipamento de mobilidade",
+        "mobility",
+        "bicycle",
+    ],
+    # 55 - Artes e entretenimento > Acessórios para instrumentos musicais
+    "Acessórios para instrumentos musicais": [
+        "instrumento musical",
+        "instrumentos musicais",
+        "acessorios para instrumentos",
+        "loja de instrumentos",
+        "musical instrument",
+    ],
+    # 3477 - Comercial e industrial > Medicina > Equipamento médico
+    "Equipamento médico": [
+        "equipamento medico",
+        "equipamentos medicos",
+        "produtos medicos",
+        "material medico",
+        "loja de produtos medicos",
+        "ortopedic",
+        "artigos medicos",
+        "medical supply",
+        "medical equipment",
+    ],
+    # Náutica (vendas relacionadas a embarcações/náutica)
+    "Náutica": [
+        "nautic",
+        "barco",
+        "embarca",
+        "iate",
+        "lancha",
+        "marina",
+        "motor de popa",
+        "estaleiro",
+        "boat",
+        "marine",
+        "veiculos recreativos",
+    ],
+}
+
 
 # ---------------------------------------------------------------------------
 # Utilidades de CNPJ
@@ -167,6 +226,30 @@ def telefones_iguais(t1: str, t2: str) -> bool:
     return d1[:2] == d2[:2] and d1[-8:] == d2[-8:]
 
 
+def categoria_do_place(p: dict) -> str:
+    """Categoria que o Google exibe, sem acento/minúscula (para casamento)."""
+    nome_tipo = (p.get("primaryTypeDisplayName") or {}).get("text", "")
+    return normalizar_nome(nome_tipo)
+
+
+def categoria_permitida(p: dict) -> str:
+    """Retorna o nome do grupo permitido se o place se encaixar; senão, ''.
+
+    Casa o texto da categoria exibida (primaryTypeDisplayName) e os 'types'
+    técnicos contra as palavras-chave de CATEGORIAS_PERMITIDAS.
+    """
+    texto_categoria = categoria_do_place(p)
+    types = " ".join(p.get("types") or [])
+    primary_type = p.get("primaryType") or ""
+    alvo = f"{texto_categoria} {types} {primary_type}".lower()
+
+    for grupo, palavras in CATEGORIAS_PERMITIDAS.items():
+        for palavra in palavras:
+            if normalizar_nome(palavra) in alvo or palavra.lower() in alvo:
+                return grupo
+    return ""
+
+
 def pontuar_place(p: dict, dados: dict) -> tuple:
     """Pontua um resultado do Google cruzando nome, telefone e endereço."""
     nome_google = (p.get("displayName") or {}).get("text", "")
@@ -222,7 +305,9 @@ def consultar_google(api_key: str, dados: dict) -> dict:
         "X-Goog-FieldMask": (
             "places.displayName,places.formattedAddress,places.rating,"
             "places.userRatingCount,places.googleMapsUri,places.businessStatus,"
-            "places.nationalPhoneNumber,places.internationalPhoneNumber"
+            "places.nationalPhoneNumber,places.internationalPhoneNumber,"
+            "places.websiteUri,"
+            "places.types,places.primaryType,places.primaryTypeDisplayName"
         ),
     }
     body = {"textQuery": query, "languageCode": "pt-BR", "regionCode": "BR", "maxResultCount": 5}
@@ -238,17 +323,24 @@ def consultar_google(api_key: str, dados: dict) -> dict:
         if not places:
             return {"perfil_google": "Não", "detalhe_google": "Nenhum perfil encontrado"}
 
+        # mantém só os perfis cuja categoria é uma das permitidas
+        permitidos = [(p, categoria_permitida(p)) for p in places]
+        permitidos = [(p, g) for p, g in permitidos if g]
+        if not permitidos:
+            return {"perfil_google": "Não", "detalhe_google": "Fora das categorias permitidas"}
+
         # escolhe o resultado com melhor pontuação combinada
-        melhor, melhor_score, melhor_nome, melhor_sinais = None, 0.0, 0.0, []
-        for p in places:
+        melhor, melhor_score, melhor_nome, melhor_sinais, melhor_grupo = None, 0.0, 0.0, [], ""
+        for p, grupo in permitidos:
             score, score_nome, sinais = pontuar_place(p, dados)
             if score > melhor_score:
-                melhor, melhor_score, melhor_nome, melhor_sinais = p, score, score_nome, sinais
+                melhor, melhor_score, melhor_nome, melhor_sinais, melhor_grupo = p, score, score_nome, sinais, grupo
 
         if melhor is None or melhor_score < 0.40:
             return {"perfil_google": "Não", "detalhe_google": "Nenhum perfil correspondente encontrado"}
 
         nome_google = (melhor.get("displayName") or {}).get("text", "")
+        site = melhor.get("websiteUri", "") or ""
         resultado = {
             "nome_google": nome_google,
             "endereco_google": melhor.get("formattedAddress", ""),
@@ -256,11 +348,16 @@ def consultar_google(api_key: str, dados: dict) -> dict:
             "avaliacao": melhor.get("rating", ""),
             "total_avaliacoes": melhor.get("userRatingCount", ""),
             "link_maps": melhor.get("googleMapsUri", ""),
+            "categoria_google": (melhor.get("primaryTypeDisplayName") or {}).get("text", ""),
+            "grupo_categoria": melhor_grupo,
+            "site": site,
+            "tem_site": bool(site.strip()),
         }
 
         detalhe = f"Nome {melhor_nome:.0%}"
         if melhor_sinais:
             detalhe += " · " + ", ".join(melhor_sinais)
+        detalhe += " · SEM SITE" if not site.strip() else " · com site"
 
         if melhor.get("businessStatus") == "CLOSED_PERMANENTLY":
             resultado["perfil_google"] = "Possível"
@@ -368,7 +465,8 @@ def buscar_nome():
         "X-Goog-FieldMask": (
             "places.displayName,places.formattedAddress,places.rating,"
             "places.userRatingCount,places.googleMapsUri,places.businessStatus,"
-            "places.nationalPhoneNumber,places.websiteUri"
+            "places.nationalPhoneNumber,places.websiteUri,"
+            "places.types,places.primaryType,places.primaryTypeDisplayName"
         ),
     }
     body = {"textQuery": query, "languageCode": "pt-BR", "regionCode": "BR", "maxResultCount": 10}
@@ -382,12 +480,19 @@ def buscar_nome():
 
         empresas = []
         for p in r.json().get("places", []):
+            grupo = categoria_permitida(p)
+            if not grupo:
+                continue  # fora das categorias permitidas
+            site = p.get("websiteUri", "") or ""
             nome_google = (p.get("displayName") or {}).get("text", "")
             empresas.append({
                 "nome_google": nome_google,
                 "endereco_google": p.get("formattedAddress", ""),
                 "telefone_google": p.get("nationalPhoneNumber", ""),
-                "site": p.get("websiteUri", ""),
+                "site": site,
+                "tem_site": bool(site.strip()),
+                "categoria_google": (p.get("primaryTypeDisplayName") or {}).get("text", ""),
+                "grupo_categoria": grupo,
                 "avaliacao": p.get("rating", ""),
                 "total_avaliacoes": p.get("userRatingCount", ""),
                 "link_maps": p.get("googleMapsUri", ""),
@@ -395,9 +500,10 @@ def buscar_nome():
                 "semelhanca": round(similaridade(nome_google, nome) * 100),
             })
 
-        # mais parecidos com o nome buscado primeiro
-        empresas.sort(key=lambda e: e["semelhanca"], reverse=True)
-        return jsonify({"empresas": empresas, "total": len(empresas)})
+        # alvo da busca: perfis SEM site primeiro, depois por semelhança
+        empresas.sort(key=lambda e: (e["tem_site"], -e["semelhanca"]))
+        sem_site = sum(1 for e in empresas if not e["tem_site"])
+        return jsonify({"empresas": empresas, "total": len(empresas), "sem_site": sem_site})
     except requests.RequestException as e:
         return jsonify({"erro": f"Falha de conexão com Google: {e}"}), 502
 

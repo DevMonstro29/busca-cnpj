@@ -84,23 +84,50 @@ No card **"Ou: busque pelo nome fantasia"**, digite o nome da empresa (e cidade,
 
 Gera listas de CNPJs **separadas por atividade (CNAE)** a partir dos arquivos oficiais da Receita Federal, lendo os `.zip` diretamente — **não precisa extrair nada**.
 
-### Baixando os dados
+### Baixando os dados (gratuito)
 
-No site de dados abertos da Receita Federal (Arquivos da Receita → CNPJ → pasta do mês mais recente), baixe para a pasta `dados\` do projeto:
+Use o script `baixar_dados.py` — baixa direto do compartilhamento público da Receita Federal para a pasta `dados\`, pulando o que já existe e retomando downloads interrompidos:
+
+```powershell
+python baixar_dados.py                 # baixa Estabelecimentos0..9 + Cnaes (o que faltar)
+python baixar_dados.py --mes 2026-05   # escolhe outro mês disponível
+python baixar_dados.py 0 1 2           # baixa só Estabelecimentos0,1,2 (+ Cnaes)
+python baixar_dados.py --cnaes         # só o Cnaes.zip
+```
 
 | Arquivo | Conteúdo |
 |---------|----------|
-| `Estabelecimentos0.zip` ... `Estabelecimentos9.zip` | CNPJ completo + nome fantasia + atividade (obrigatório; cada um tem ~10% do Brasil) |
+| `Estabelecimentos0.zip` ... `Estabelecimentos9.zip` | CNPJ completo + nome fantasia + atividade (cada um tem ~10% do Brasil; o `0` é maior, ~2 GB) |
 | `Cnaes.zip` | Nomes das atividades (pequeno, recomendado) |
+
+> Os 10 arquivos somam ~5 GB. Para o Brasil inteiro, baixe todos. Para testar, 1 ou 2 já dão uma amostra.
 
 ### Rodando
 
 ```powershell
-python extrair_cnpjs.py --ativas              # só empresas ATIVAS (recomendado)
-python extrair_cnpjs.py                       # todas as situações cadastrais
+python extrair_cnpjs.py --filtrar --ativas    # SÓ as categorias de interesse, empresas ATIVAS (recomendado)
+python extrair_cnpjs.py --ativas              # todas as atividades, só ATIVAS
+python extrair_cnpjs.py                       # tudo, todas as situações cadastrais
 python extrair_cnpjs.py C:\outra\pasta        # ZIPs em outra pasta
 python extrair_cnpjs.py --saida minha_pasta   # muda a pasta de saída
 ```
+
+#### Categorias de interesse (`--filtrar`)
+
+Com `--filtrar`, o script extrai **apenas** os CNAEs definidos em `CNAES_ALVO` (topo do `extrair_cnpjs.py`):
+
+| CNAE | Atividade | Categoria |
+|------|-----------|-----------|
+| `4773300` | Comércio varejista de artigos médicos e ortopédicos | Mobilidade/acessibilidade + Equip. médico |
+| `4645102` | Comércio atacadista de próteses e artigos de ortopedia | Mobilidade/acessibilidade |
+| `4645101` | Comércio atacadista de instrumentos/materiais médico-hospitalares | Equip. médico |
+| `4664800` | Comércio atacadista de máquinas/equip. médico-hospitalar | Equip. médico |
+| `4618402` | Representantes de materiais médico-hospitalares | Equip. médico |
+| `4756300` | Comércio varejista de instrumentos musicais e acessórios | Instrumentos musicais |
+| `4763605` | Comércio varejista de embarcações e veículos recreativos | Náutica |
+| `4614100` | Representantes de máquinas, equipamentos, embarcações e aeronaves | Náutica |
+
+Para incluir/remover CNAEs, edite o dicionário `CNAES_ALVO`.
 
 ### Saída (pasta `cnpjs_por_atividade\`)
 
@@ -127,8 +154,9 @@ Atividades de **comércio varejista** pressupõem ponto de venda; para confirmar
 
 ```
 busca-cnpj/
-├── app.py                  # servidor Flask (rotas, consulta Receita, match Google)
-├── extrair_cnpjs.py        # extrai CNPJs dos ZIPs da Receita, separados por CNAE
+├── app.py                  # servidor Flask (rotas, consulta Receita, match Google, filtro de categoria)
+├── baixar_dados.py         # baixa os ZIPs da Receita (gratuito, com retomada)
+├── extrair_cnpjs.py        # extrai CNPJs dos ZIPs da Receita, separados por CNAE (--filtrar)
 ├── templates/
 │   └── index.html          # página do painel
 ├── static/
@@ -136,6 +164,18 @@ busca-cnpj/
 │   └── style.css           # visual
 └── dados/                  # ZIPs da Receita (não versionado — arquivos grandes)
 ```
+
+### Filtro por categoria no Google + "perfis sem site"
+
+No `app.py`, o dicionário `CATEGORIAS_PERMITIDAS` define quais categorias do Google são aceitas
+(mobilidade/scooters, instrumentos musicais, equipamento médico, náutica). Perfis fora dessas
+categorias são marcados como **"Fora das categorias permitidas"**.
+
+O objetivo do fluxo é achar **empresas que têm perfil no Google mas NÃO têm site**:
+
+- A coluna **Site** mostra um selo vermelho **"SEM SITE"** quando o perfil existe sem `websiteUri`
+- O resumo conta quantos estão **"COM PERFIL E SEM SITE"**
+- O checkbox **"Só perfis SEM site"** filtra a tabela; o CSV exportado respeita esse filtro
 
 ## 6. Limites e observações
 
