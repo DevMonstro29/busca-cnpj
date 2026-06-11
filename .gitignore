@@ -3,9 +3,11 @@ dados/
 
 # Listas geradas pelo extrair_cnpjs.py
 cnpjs_por_atividade/
-cnpjs_categorias/
 cnpjs*.txt
 eletrodomesticos.txt
+
+# cnpjs_categorias/ é versionada de propósito (listas já extraídas das categorias,
+# para que outros usuários não precisem baixar os ~5 GB de dados da Receita)
 
 # Python
 __pycache__/
