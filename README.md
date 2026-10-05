@@ -14,11 +14,15 @@ Inclui também um script para extrair CNPJs dos dados abertos da Receita Federal
 Requisitos: Python 3.10+ instalado.
 
 ```powershell
-pip install flask requests openpyxl
+pip install -r requirements.txt
 ```
 
 ## 2. Como rodar
 
+Você pode simplesmente dar **dois cliques** no arquivo:
+- `executar.bat` (inicia o servidor e abre o navegador automaticamente)
+
+Ou rodar via terminal:
 ```powershell
 python app.py
 ```
